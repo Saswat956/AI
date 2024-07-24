@@ -1,18 +1,24 @@
 import PyPDF2
-import camelot
+import pdfplumber
 import pandas as pd
 
 def extract_text_and_tables(pdf_path):
-    # Extract plain text using PyPDF2
     plain_text = ""
+    tables = []
+
+    # Extract plain text using PyPDF2
     with open(pdf_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
         for page_num in range(len(reader.pages)):
             page = reader.pages[page_num]
             plain_text += page.extract_text()
     
-    # Extract tables using camelot-py
-    tables = camelot.read_pdf(pdf_path, pages='all')
+    # Extract tables using pdfplumber
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            extracted_tables = page.extract_tables()
+            for table in extracted_tables:
+                tables.append(pd.DataFrame(table[1:], columns=table[0]))  # Convert to DataFrame
 
     return plain_text, tables
 
@@ -25,7 +31,7 @@ def save_to_excel(plain_text, tables, output_path):
 
     # Save tables
     for i, table in enumerate(tables):
-        table.df.to_excel(writer, sheet_name=f"Table_{i+1}", index=False)
+        table.to_excel(writer, sheet_name=f"Table_{i+1}", index=False)
 
     writer.save()
 
