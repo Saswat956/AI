@@ -1,0 +1,36 @@
+import PyPDF2
+import camelot
+import pandas as pd
+
+def extract_text_and_tables(pdf_path):
+    # Extract plain text using PyPDF2
+    plain_text = ""
+    with open(pdf_path, "rb") as file:
+        reader = PyPDF2.PdfReader(file)
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            plain_text += page.extract_text()
+    
+    # Extract tables using camelot-py
+    tables = camelot.read_pdf(pdf_path, pages='all')
+
+    return plain_text, tables
+
+def save_to_excel(plain_text, tables, output_path):
+    writer = pd.ExcelWriter(output_path, engine='openpyxl')
+
+    # Save plain text
+    plain_text_df = pd.DataFrame([plain_text], columns=["Text"])
+    plain_text_df.to_excel(writer, sheet_name="PlainText", index=False)
+
+    # Save tables
+    for i, table in enumerate(tables):
+        table.df.to_excel(writer, sheet_name=f"Table_{i+1}", index=False)
+
+    writer.save()
+
+# Usage
+pdf_path = "your_file.pdf"
+output_path = "output.xlsx"
+plain_text, tables = extract_text_and_tables(pdf_path)
+save_to_excel(plain_text, tables, output_path)
