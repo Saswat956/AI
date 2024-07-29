@@ -1,3 +1,6 @@
+In that case, the issue might be due to the fact that prev_table is not initialized as a DataFrame before trying to concatenate it with another DataFrame.
+Here's an updated version of the code that initializes prev_table as an empty DataFrame:
+Python
 import PyPDF2
 import pdfplumber
 import pandas as pd
@@ -5,7 +8,7 @@ import pandas as pd
 def extract_text_and_tables(pdf_path):
     plain_text = ""
     tables = []
-    prev_table = None
+    prev_table = pd.DataFrame()  # Initialize prev_table as an empty DataFrame
 
     # Extract plain text using PyPDF2
     with open(pdf_path, "rb") as file:
@@ -21,8 +24,8 @@ def extract_text_and_tables(pdf_path):
             for table in extracted_tables:
                 header = table[0]
                 if header != [' ', 'Policy ID', ' ', ' ', 'Policy']:  # Check if header matches
-                    if prev_table is not None:
-                        prev_table = pd.concat([prev_table, pd.DataFrame(table[1:])])
+                    if not prev_table.empty:  # Check if prev_table is not empty
+                        prev_table = pd.concat([prev_table.reset_index(drop=True), pd.DataFrame(table[1:])])
                 else:
                     tables.append(pd.DataFrame(table[1:], columns=header))
                     prev_table = tables[-1]
@@ -44,3 +47,4 @@ pdf_path = "your_file.pdf"
 output_path = "output.xlsx"
 plain_text, tables = extract_text_and_tables(pdf_path)
 save_to_excel(plain_text, tables, output_path)
+This code initializes prev_table as an empty DataFrame using pd.DataFrame(). It also checks if prev_table is not empty before trying to concatenate it with another DataFrame.
