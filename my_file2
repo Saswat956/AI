@@ -1,0 +1,29 @@
+In that case, you can use the pandas library to read the Excel file and handle the tables with similar headers. Here's an updated version of the code:
+Python
+import pandas as pd
+
+def handle_tables(excel_path):
+    # Read the Excel file
+    excel_file = pd.ExcelFile(excel_path)
+
+    # Iterate over the sheets
+    for sheet_name in excel_file.sheet_names:
+        if sheet_name.startswith("Table_"):
+            # Read the sheet into a DataFrame
+            df = excel_file.parse(sheet_name)
+
+            # Check if the header is similar to the previous header
+            if 'prev_header' in locals() and all(cell in prev_header for cell in df.columns):
+                # Reuse the previous header
+                df.columns = prev_header
+            else:
+                # Update the previous header
+                prev_header = df.columns.tolist()
+
+            # Save the updated DataFrame to a new Excel file
+            df.to_excel("updated_" + excel_path, sheet_name=sheet_name, index=False)
+
+# Usage
+excel_path = "your_file.xlsx"
+handle_tables(excel_path)
+This code reads the Excel file, iterates over the sheets, and checks if the header of each table is similar to the previous header. If it is, it reuses the previous header. Otherwise, it updates the previous header. Finally, it saves the updated DataFrames to a new Excel file.
