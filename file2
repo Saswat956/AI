@@ -19,11 +19,12 @@ def extract_text_and_tables(pdf_path):
         for page in pdf.pages:
             extracted_tables = page.extract_tables()
             for table in extracted_tables:
-                if table[0][0] == '':  # Check if table has header
+                header = table[0]
+                if header != [' ', 'Policy ID', ' ', ' ', 'Policy']:  # Check if header matches
                     if prev_table is not None:
                         prev_table = pd.concat([prev_table, pd.DataFrame(table[1:])])
                 else:
-                    tables.append(pd.DataFrame(table[1:], columns=table[0]))
+                    tables.append(pd.DataFrame(table[1:], columns=header))
                     prev_table = tables[-1]
 
     return plain_text, tables
@@ -43,4 +44,3 @@ pdf_path = "your_file.pdf"
 output_path = "output.xlsx"
 plain_text, tables = extract_text_and_tables(pdf_path)
 save_to_excel(plain_text, tables, output_path)
-#This updated code checks if a table has a header by checking if the first row of the table is empty. If it is, it merges the table with the previous table. If not, it adds the table to the list of tables. The prev_table variable keeps track of the previous table.
