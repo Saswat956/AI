@@ -1,0 +1,46 @@
+import PyPDF2
+import pdfplumber
+import pandas as pd
+
+def extract_text_and_tables(pdf_path):
+    plain_text = ""
+    tables = []
+    prev_table = None
+
+    # Extract plain text using PyPDF2
+    with open(pdf_path, "rb") as file:
+        reader = PyPDF2.PdfReader(file)
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            plain_text += page.extract_text()
+    
+    # Extract tables using pdfplumber
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            extracted_tables = page.extract_tables()
+            for table in extracted_tables:
+                if table[0][0] == '':  # Check if table has header
+                    if prev_table is not None:
+                        prev_table = pd.concat([prev_table, pd.DataFrame(table[1:])])
+                else:
+                    tables.append(pd.DataFrame(table[1:], columns=table[0]))
+                    prev_table = tables[-1]
+
+    return plain_text, tables
+
+def save_to_excel(plain_text, tables, output_path):
+    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+        # Save plain text
+        plain_text_df = pd.DataFrame([plain_text], columns=["Text"])
+        plain_text_df.to_excel(writer, sheet_name="PlainText", index=False)
+
+        # Save tables
+        for i, table in enumerate(tables):
+            table.to_excel(writer, sheet_name=f"Table_{i+1}", index=False)
+
+# Usage
+pdf_path = "your_file.pdf"
+output_path = "output.xlsx"
+plain_text, tables = extract_text_and_tables(pdf_path)
+save_to_excel(plain_text, tables, output_path)
+#This updated code checks if a table has a header by checking if the first row of the table is empty. If it is, it merges the table with the previous table. If not, it adds the table to the list of tables. The prev_table variable keeps track of the previous table.
