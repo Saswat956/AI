@@ -1,0 +1,37 @@
+import numpy as np
+import pandas as pd
+
+# Correct the paths
+path = "C:/Users/sswai18/Desktop/loutput2.xlsx"
+output_path = "C:/Users/sswai18/result.xlsx"
+
+# Read the sheet names from the Excel file
+sheets = pd.ExcelFile(path).sheet_names
+
+# Create an initial DataFrame with the specified columns
+df = pd.DataFrame(columns=["Policy ID", "Policy", "Standard ID", "Standard"])
+
+# Open a Pandas Excel writer using openpyxl as the engine
+with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+    for i in sheets:
+        if i == "plainText":
+            xdf = pd.read_excel(path, sheet_name="plainText")
+            xdf.to_excel(writer, sheet_name="plainText", index=False)
+        else:
+            # Placeholder for actual function to read and process the sheet
+            new_df = synthesise_gov_std_tabular_data(path, i)
+            
+            if len(new_df.columns) < 3:
+                new_df.to_excel(writer, sheet_name=f"table_{i}", index=False)
+            else:
+                new_df = synthesise_gov_std_tabular_data(path, sheet=i)
+                df = pd.concat([df, new_df]).reset_index(drop=True)
+
+    # Process the combined DataFrame
+    for j in df.columns:
+        df[j] = np.where(df[j].str.contains("Unnamed", na=False), np.nan, df[j])
+
+    df = df.fillna()
+
+    # Write the combined DataFrame to the Excel file
+    df.to_excel(writer, sheet_name="table_combined", index=False)
