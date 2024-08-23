@@ -1,0 +1,41 @@
+import pdfquery
+import openpyxl
+
+# Open the PDF file
+pdf = pdfquery.PDFQuery('input.pdf')
+
+# Extract text from the PDF
+pdf.load()
+text = pdf.extract( [
+    ('with_formatter', 'text'),
+    ('page', 'all'),
+    ('text', 'all')
+] )
+text = text['text']
+
+# Extract tables from the PDF
+tables = pdf.extract( [
+    ('with_formatter', 'csv'),
+    ('page', 'all'),
+    ('table', 'all')
+] )
+
+# Create an Excel workbook
+wb = openpyxl.Workbook()
+
+# Create a sheet for text
+text_sheet = wb.active
+text_sheet.title = 'Text'
+text_sheet.append(['Text'])
+text_sheet.append([text])
+
+# Create a sheet for tables
+table_sheet = wb.create_sheet('Tables')
+
+# Write the tables to the table sheet
+for table in tables:
+    for row in table.split('\n'):
+        table_sheet.append(row.split(','))
+
+# Save the Excel file
+wb.save('output.xlsx')
