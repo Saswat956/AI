@@ -1,0 +1,42 @@
+import os
+from pdfminer.high_level import extract_text, extract_pages
+from pdfminer.layout import LTTextContainer, LTTable
+from openpyxl import Workbook
+
+# Open the PDF file
+with open('input.pdf', 'rb') as f:
+    # Extract text from the PDF
+    text = extract_text(f)
+    
+    # Extract pages from the PDF
+    pages = extract_pages(f)
+    
+    # Create an Excel workbook
+    wb = Workbook()
+    
+    # Create a sheet for text
+    text_sheet = wb.active
+    text_sheet.title = 'Text'
+    text_sheet.append(['Text'])
+    text_sheet.append([text])
+    
+    # Create a sheet for tables
+    table_sheet = wb.create_sheet('Tables')
+    
+    # Iterate over the pages
+    for page in pages:
+        # Iterate over the elements on the page
+        for elem in page:
+            # Check if the element is a table
+            if isinstance(elem, LTTable):
+                # Extract the table data
+                table_data = []
+                for row in elem:
+                    table_data.append([cell.text for cell in row])
+                
+                # Append the table data to the table sheet
+                for row in table_data:
+                    table_sheet.append(row)
+    
+    # Save the Excel file
+    wb.save('output.xlsx')
