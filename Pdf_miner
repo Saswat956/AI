@@ -1,42 +1,68 @@
+!pip install pdfminer.six
+# Name: pdfminer
+# Version: 20191125
+# Summary: PDF parser and analyzer
+# Home-page: http://github.com/euske/pdfminer
+# Author: Yusuke Shinyama
+# Author-email: yusuke@shinyama.jp
+# License: MIT
+# Location: /usr/local/lib/python3.10/dist-packages
+# Requires: pycryptodome
+# Required-by: 
+
+
 import os
 from pdfminer.high_level import extract_text, extract_pages
-from pdfminer.layout import LTTextContainer, LTTable
 from openpyxl import Workbook
+from pdfminer.converter import LTChar
+
+input_path = "/content/RAG_KNOWLEDGE_INTENSIVE_TASKS.pdf"
 
 # Open the PDF file
-with open('input.pdf', 'rb') as f:
-    # Extract text from the PDF
-    text = extract_text(f)
-    
-    # Extract pages from the PDF
-    pages = extract_pages(f)
-    
-    # Create an Excel workbook
-    wb = Workbook()
-    
-    # Create a sheet for text
-    text_sheet = wb.active
-    text_sheet.title = 'Text'
-    text_sheet.append(['Text'])
-    text_sheet.append([text])
-    
-    # Create a sheet for tables
-    table_sheet = wb.create_sheet('Tables')
-    
-    # Iterate over the pages
-    for page in pages:
-        # Iterate over the elements on the page
-        for elem in page:
-            # Check if the element is a table
-            if isinstance(elem, LTTable):
-                # Extract the table data
-                table_data = []
-                for row in elem:
-                    table_data.append([cell.text for cell in row])
-                
-                # Append the table data to the table sheet
-                for row in table_data:
-                    table_sheet.append(row)
-    
-    # Save the Excel file
-    wb.save('output.xlsx')
+f = open(input_path, 'rb')
+
+# Extract pages from the PDF
+pages = extract_pages(f)
+
+# Create an Excel workbook
+wb = Workbook()
+
+# Create a sheet for text
+text_sheet = wb.active
+text_sheet.title = 'Text'
+text_sheet.append(['Text'])
+
+# Create a sheet for tables
+table_sheet = wb.create_sheet('Tables')
+
+# Iterate over the pages
+for page in pages:
+    # Iterate over the elements on the page
+    for elem in page:
+        # Check if the element is a LTTextContainer (text)
+        if isinstance(elem, LTTextContainer):
+            # Extract the text
+            text = elem.get_text()
+            # Append the text to the text sheet
+            text_sheet.append([text])
+        # Check if the element is a LTChar (table)
+        elif isinstance(elem, LTChar):
+            # Extract the table data
+            table_data = []
+            row = []
+            for char in elem:
+                if char.get_text():
+                    row.append(char.get_text())
+                elif char.get_fontsize():
+                    table_data.append(row)
+                    row = []
+            table_data.append(row)
+            # Append the table data to the table sheet
+            for row in table_data:
+                table_sheet.append(row)
+
+# Close the file
+f.close()
+
+# Save the Excel file
+wb.save('output.xlsx')
