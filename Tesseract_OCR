@@ -1,0 +1,63 @@
+!pip install pillow pdf2image pytesseract openpyxl
+
+# Install Tesseract OCR
+!apt-get update
+!apt-get install -y tesseract-ocr
+
+# Verify the installation
+!tesseract --version
+
+import pytesseract
+from pdf2image import convert_from_path
+from PIL import Image
+import openpyxl
+import re
+
+# Path to your Tesseract-OCR executable (for Colab, this should be the default path)
+pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+
+# Input and output paths
+input_path = "/content/RAG_KNOWLEDGE_INTENSIVE_TASKS.pdf"
+output_path = "/content/output_tesseract.xlsx"
+
+def sanitize_text(text):
+    """Remove or replace illegal characters for Excel."""
+    return re.sub(r'[^\x20-\x7E]', '', text)
+
+# Create an Excel workbook
+wb = openpyxl.Workbook()
+
+# Create a sheet for text
+text_sheet = wb.active
+text_sheet.title = 'Text'
+
+# Create a sheet for tables
+table_sheet = wb.create_sheet('Tables')
+
+# Convert PDF pages to images
+images = convert_from_path(input_path)
+
+# Extract text and tables from each image
+for i, image in enumerate(images):
+    # Extract text with Tesseract OCR
+    text = pytesseract.image_to_string(image)
+    sanitized_text = sanitize_text(text)
+    
+    # Append text to the text sheet
+    text_sheet.append([f"Page {i + 1}"])
+    text_sheet.append([sanitized_text])
+    
+    # Extract tables from the image (using OCR layout analysis)
+    # This is a basic example; table extraction is more complex and may require additional processing
+    # You can use pytesseract's image_to_data() for detailed layout information
+    table_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
+    for word, x, y, width, height in zip(table_data['text'], table_data['left'], table_data['top'], table_data['width'], table_data['height']):
+        if word.strip():  # Ignore empty words
+            table_sheet.append([f"Page {i + 1}", word, x, y, width, height])
+
+# Save the Excel file
+wb.save(output_path)
+
+# Provide a download link for the Excel file
+from google.colab import files
+files.download(output_path)
