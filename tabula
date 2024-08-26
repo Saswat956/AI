@@ -1,0 +1,22 @@
+!pip install tabula-py pandas openpyxl
+
+import tabula
+import pandas as pd
+
+# Path to your input PDF file and output Excel file
+input_path = "/content/RAG_KNOWLEDGE_INTENSIVE_TASKS.pdf"
+output_path = "/content/output_tabula.xlsx"
+
+# Extract tables from the PDF
+tables = tabula.read_pdf(input_path, pages='all', multiple_tables=True)
+
+# Create a Pandas Excel writer using Openpyxl
+with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+    # Write each table to a separate sheet
+    for i, table in enumerate(tables):
+        table_df = pd.DataFrame(table)
+        table_df.to_excel(writer, sheet_name=f'Table_{i + 1}', index=False)
+
+# Provide a download link for the Excel file
+#from google.colab import files
+#files.download(output_path)
