@@ -1,0 +1,55 @@
+!pip install PyMuPDF
+
+import fitz  # PyMuPDF
+import openpyxl
+import re
+
+input_path = "/content/RAG_KNOWLEDGE_INTENSIVE_TASKS.pdf"
+
+def sanitize_text(text):
+    """Remove or replace illegal characters for Excel."""
+    # Remove illegal characters (using a regex to match them)
+    return re.sub(r'[^\x20-\x7E]', '', text)  # Only keep ASCII printable characters
+
+# Create an Excel workbook
+wb = openpyxl.Workbook()
+
+# Create a sheet for text
+text_sheet = wb.active
+text_sheet.title = 'Text'
+
+# Create a sheet for tables
+table_sheet = wb.create_sheet('Tables')
+
+# Open the PDF file with PyMuPDF
+pdf_document = fitz.open(input_path)
+
+# Extract and save text
+text = ""
+for page_num in range(len(pdf_document)):
+    page = pdf_document.load_page(page_num)
+    text += page.get_text() + "\n"
+
+# Sanitize the extracted text
+sanitized_text = sanitize_text(text)
+
+# Append sanitized text to the text sheet
+text_sheet.append(['Text'])
+text_sheet.append([sanitized_text])
+
+# Extract and save tables
+for page_num in range(len(pdf_document)):
+    page = pdf_document.load_page(page_num)
+    # Extract text by blocks (simpler approach)
+    blocks = page.get_text("dict")["blocks"]
+    for block in blocks:
+        if block['type'] == 0:  # type 0 is text block
+            # Extract lines from each block and sanitize them
+            for line in block.get('lines', []):
+                line_text = ' '.join([span.get('text', '') for span in line.get('spans', [])])
+                if line_text.strip():  # Check if line is not empty
+                    sanitized_line = sanitize_text(line_text)
+                    table_sheet.append(sanitized_line.split())
+
+# Save the Excel file
+wb.save('output_pymupdf.xlsx')
