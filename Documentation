@@ -1,0 +1,79 @@
+1.pdfplumber is a Python library designed for extracting text, tables, and metadata from PDF files. It provides a straightforward and efficient way to work with PDFs and extract structured data, making it useful for data analysis and document processing tasks.
+
+Short Description
+Text Extraction: Extracts text from PDF pages, including handling complex layouts.
+Table Extraction: Identifies and extracts tables from PDF documents, converting them into structured formats like pandas DataFrames.
+Metadata Extraction: Retrieves metadata such as author, title, and creation date from PDFs.
+Page Layout: Provides information on the layout of pages, including text positions and font information.
+Installation
+To install pdfplumber, you can use pip, the Python package installer. Run the following command:
+
+pip install pdfplumber
+
+
+2.pdfminer is a Python library for extracting text, images, and metadata from PDF files. It provides a set of tools for detailed and precise extraction, particularly useful for complex PDFs with intricate layouts.
+
+Short Description
+Text Extraction: Extracts text from PDF files, including detailed layout information and font styles.
+Metadata Extraction: Retrieves document metadata such as author, title, and creation date.
+Layout Analysis: Analyzes and provides information about the layout of text on pages.
+Image Extraction: Allows for extraction of images embedded within PDF files.
+Installation
+To install pdfminer, you can use pip, the Python package installer. There are two main packages related to pdfminer:
+
+pdfminer.six: A Python 3 compatible version of pdfminer that is actively maintained.
+pdfminer: The original Python 2 version, which is less commonly used now.
+For most users, installing pdfminer.six is recommended:
+
+pip install pdfminer.six
+
+3.Camelot is a Python library specifically designed for extracting tables from PDF files. It provides a straightforward way to extract tabular data and convert it into structured formats like pandas DataFrames or CSV files.
+
+Short Description
+Table Extraction: Identifies and extracts tables from PDF documents with various layout styles.
+Structured Output: Converts extracted tables into structured formats such as pandas DataFrames, CSV, or Excel files.
+PDF Layout Analysis: Supports analyzing different types of table layouts and can handle complex table structures.
+Installation
+To install camelot, you need to use pip, the Python package installer. You can install Camelot along with its dependencies using the following command:
+
+pip install camelot-py[cv]
+The [cv] extra installs additional dependencies for computer vision tasks, which are necessary for Camelot's table detection.
+
+4.Tabula
+Tabula is a Python library designed for extracting tables from PDF documents. It is known for its ease of use and effectiveness in converting tabular data from PDFs into structured formats like pandas DataFrames or CSV files.
+
+Short Description
+Table Extraction: Extracts tables from PDF documents with a focus on ease of use.
+Structured Output: Converts extracted tables into pandas DataFrames, CSV, or Excel formats.
+PDF Page Selection: Allows specifying particular pages or ranges of pages for extraction.
+Installation
+To install tabula-py, the Python wrapper for the Tabula library, use pip. The installation also requires Java to be installed on your system because Tabula relies on the Java-based Tabula library for table extraction.
+
+Install tabula-py:
+pip install tabula-py
+
+5.OCR-Tesseract
+Tesseract is an open-source Optical Character Recognition (OCR) engine developed by Google. It is used to convert different types of documents, including scanned paper documents and images, into editable and searchable text. Tesseract is highly versatile and supports a wide range of languages and image formats.
+
+Short Description
+OCR (Optical Character Recognition): Extracts text from images and scanned documents.
+Multi-Language Support: Recognizes text in various languages and scripts.
+Text Extraction: Converts printed or handwritten text in images into machine-readable text.
+Image Pre-processing: Works best with pre-processed and clean images.
+Installation
+To use Tesseract in Python, you need both the Tesseract OCR engine and the pytesseract library, which is a Python wrapper for Tesseract.
+
+Install pytesseract Python Library:
+
+pip install pytesseract
+
+6.PyMuPDF (also known as fitz) is a Python binding for the MuPDF library, which is a lightweight PDF and XPS viewer. PyMuPDF provides tools for reading, manipulating, and analyzing PDF, XPS, and other document formats. It is known for its performance and ease of use.
+
+Short Description
+PDF and Document Handling: Provides tools for reading, extracting, and manipulating content in PDF, XPS, and other formats.
+Text Extraction: Extracts text from documents with options for layout and formatting.
+Image Extraction: Extracts images embedded within PDFs.
+Document Manipulation: Allows for modification of document content, including adding or removing pages and annotations.
+Page Rendering: Renders pages as images for visualization or further processing.
+
+pip install pymupdf
