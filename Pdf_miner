@@ -15,6 +15,7 @@ import os
 from pdfminer.high_level import extract_text, extract_pages
 from openpyxl import Workbook
 from pdfminer.converter import LTChar
+from pdfminer.layout import LTTextContainer
 
 input_path = "/content/RAG_KNOWLEDGE_INTENSIVE_TASKS.pdf"
 
