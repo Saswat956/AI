@@ -1,0 +1,115 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import sqlite3
+from typing import List
+
+# FastAPI instance
+app = FastAPI()
+
+# Database file
+DATABASE = "fastapi_db.db"
+
+# Pydantic model for request validation
+class ItemCreate(BaseModel):
+    name: str
+    description: str
+    price: float
+
+class ItemResponse(ItemCreate):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+# Function to get a database connection
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row  # This allows us to access columns by name
+    return conn
+
+# Create the database and items table if it doesn't exist
+def init_db():
+    with get_db_connection() as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT,
+                price REAL NOT NULL
+            )
+        ''')
+        conn.commit()
+
+# Call the function to initialize the database
+init_db()
+
+# Endpoint to create a new item
+@app.post("/items/", response_model=ItemResponse)
+def create_item(item: ItemCreate):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO items (name, description, price) VALUES (?, ?, ?)
+        ''', (item.name, item.description, item.price))
+        conn.commit()
+        item_id = cursor.lastrowid
+        return {**item.dict(), "id": item_id}
+
+# Endpoint to get all items
+@app.get("/items/", response_model=List[ItemResponse])
+def read_items(skip: int = 0, limit: int = 10):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM items LIMIT ? OFFSET ?
+        ''', (limit, skip))
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
+
+# Endpoint to get a specific item by ID
+@app.get("/items/{item_id}", response_model=ItemResponse)
+def read_item(item_id: int):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM items WHERE id = ?
+        ''', (item_id,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return dict(row)
+
+# Endpoint to update an item by ID
+@app.put("/items/{item_id}", response_model=ItemResponse)
+def update_item(item_id: int, item: ItemCreate):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE items SET name = ?, description = ?, price = ? WHERE id = ?
+        ''', (item.name, item.description, item.price, item_id))
+        conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return {**item.dict(), "id": item_id}
+
+# Endpoint to delete an item by ID
+@app.delete("/items/{item_id}", response_model=dict)
+def delete_item(item_id: int):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM items WHERE id = ?
+        ''', (item_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return {"message": f"Item with ID {item_id} deleted"}
+
+# Endpoint to get the count of items
+@app.get("/items/count", response_model=dict)
+def get_item_count():
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM items')
+        count = cursor.fetchone()[0]
+        return {"count": count}
