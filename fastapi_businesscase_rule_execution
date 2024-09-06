@@ -1,0 +1,83 @@
+How to run this file and create steps for each task with dummy data
+Answer
+To run the FastAPI application and create steps for each task with dummy data, follow these steps:
+Save the code in a file (e.g., main.py).
+Install the required dependencies:
+bash
+pip install fastapi sqlalchemy psycopg2-binary uvicorn
+
+Set up your PostgreSQL database:
+Create a database named fastapi_db (or use an existing one).
+Create a schema named policy_repository (if it doesn't exist).
+Update the DATABASE_URL in the code with your PostgreSQL credentials:
+python
+DATABASE_URL = "postgresql://username:password@localhost/fastapi_db"
+
+Run the FastAPI application:
+bash
+uvicorn main:app --reload
+
+Create dummy data for testing:
+Use a tool like Postman or curl to send POST requests to http://127.0.0.1:8000/policy_business_rules/ with dummy data.
+Example dummy data:
+json
+{
+  "policy_id": 1,
+  "standard_id": 101,
+  "rule_desc": "Dummy rule description",
+  "rule_definition": "Dummy rule definition",
+  "status": "Active",
+  "created_by_user_id": "user123",
+  "lst_updt_by_user_id": "user123"
+}
+
+Test the other endpoints:
+GET http://127.0.0.1:8000/policy_business_rules/ to retrieve all rules.
+GET http://127.0.0.1:8000/policy_business_rules/1 to retrieve a specific rule by ID (replace 1 with the actual ID).
+PUT http://127.0.0.1:8000/policy_business_rules/1 to update a rule by ID (replace 1 with the actual ID).
+DELETE http://127.0.0.1:8000/policy_business_rules/1 to delete a rule by ID (replace 1 with the actual ID).
+GET http://127.0.0.1:8000/policy_business_rules/count to get the total count of rules.
+Here's a step-by-step guide for each task:
+Create a New Policy Business Rule
+Send a POST request to http://127.0.0.1:8000/policy_business_rules/ with the following JSON data:
+json
+{
+  "policy_id": 1,
+  "standard_id": 101,
+  "rule_desc": "Dummy rule description",
+  "rule_definition": "Dummy rule definition",
+  "status": "Active",
+  "created_by_user_id": "user123",
+  "lst_updt_by_user_id": "user123"
+}
+
+The API will create a new policy business rule and return the created rule with the assigned br_rule_id.
+Retrieve All Policy Business Rules
+Send a GET request to http://127.0.0.1:8000/policy_business_rules/.
+The API will return a list of all policy business rules, with a default limit of 10 rules per request.
+You can use query parameters skip and limit to paginate the results, e.g., http://127.0.0.1:8000/policy_business_rules/?skip=10&limit=10.
+Retrieve a Specific Policy Business Rule
+Send a GET request to http://127.0.0.1:8000/policy_business_rules/1, replacing 1 with the actual br_rule_id of the rule you want to retrieve.
+The API will return the details of the specified policy business rule.
+Update a Policy Business Rule
+Send a PUT request to http://127.0.0.1:8000/policy_business_rules/1, replacing 1 with the actual br_rule_id of the rule you want to update.
+Include the updated data in the request body as JSON, e.g.:
+json
+{
+  "policy_id": 2,
+  "standard_id": 102,
+  "rule_desc": "Updated rule description",
+  "rule_definition": "Updated rule definition",
+  "status": "Inactive",
+  "created_by_user_id": "user123",
+  "lst_updt_by_user_id": "user456"
+}
+
+The API will update the specified policy business rule and return the updated rule details.
+Delete a Policy Business Rule
+Send a DELETE request to http://127.0.0.1:8000/policy_business_rules/1, replacing 1 with the actual br_rule_id of the rule you want to delete.
+The API will delete the specified policy business rule and return a success message.
+Get the Count of Policy Business Rules
+Send a GET request to http://127.0.0.1:8000/policy_business_rules/count.
+The API will return the total count of policy business rules in the database.
+By following these steps and using the provided dummy data, you can test the functionality of your FastAPI application for managing policy business rules.
