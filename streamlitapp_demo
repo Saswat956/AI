@@ -1,0 +1,45 @@
+import streamlit as st
+
+# Page title and header
+st.title("Business Rule Editor")
+st.header("Create Business Rule")
+
+# Policy Information
+st.subheader("Policy Information")
+policy_requirement = st.text_input("Policy Requirement", value="xyz")
+policy_standard = st.text_input("Policy Standard", value=" Data Quality - Fit For Purpose")
+
+# Rule ID and Description
+st.subheader("Rule Information")
+rule_id = st.text_input("Rule ID", value="xyz")
+rule_description = st.text_area("Rule Description", value="For Structured Data set: Data Stewards are responsible for ensuring that Fit-for-Purpose Data Quality Controls are implemented for Completeness Data Quality Risk Dimensions.")
+
+# Given Condition
+st.subheader("Given Condition")
+given_condition = st.text_area("Given", value="There is a CDE identified for a system")
+
+# When Condition (Metadata, Operator, Condition)
+st.subheader("When Condition")
+metadata = st.text_input("Metadata", value="xyz")
+operator = st.text_input("Operator", value="=")
+condition = st.text_input("Condition", value="Mandatory")
+
+# Then Condition
+st.subheader("Then Action")
+then_action = st.text_area("Then", value="Apply completeness check on all the physical data elements mapped to the CDE selected.")
+
+# Applies To
+applies_to = st.selectbox("Applies to", ["All Business Units", "Specific Business Units"])
+
+# Button to submit the rule
+if st.button("Submit Rule"):
+    st.success("Rule Submitted Successfully!")
+    st.write(f"**Policy Requirement**: {policy_requirement}")
+    st.write(f"**Policy Standard**: {policy_standard}")
+    st.write(f"**Rule ID**: {rule_id}")
+    st.write(f"**Rule Description**: {rule_description}")
+    st.write(f"**Given**: {given_condition}")
+    st.write(f"**When Metadata**: {metadata}, **Operator**: {operator}, **Condition**: {condition}")
+    st.write(f"**Then**: {then_action}")
+    st.write(f"**Applies to**: {applies_to}")
+
