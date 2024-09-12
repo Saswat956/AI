@@ -1,0 +1,55 @@
+import streamlit as st
+
+# App title
+st.title('Business Rule Management System')
+
+# Sidebar for navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.selectbox("Choose a page", ["Home", "View/Edit BR", "Create BR"])
+
+# Home Page
+if page == "Home":
+    st.header("Atlas Home Page")
+    st.write("Welcome to the Policy Rule Engine for managing Business Rules (BRs). Use the navigation sidebar to proceed.")
+
+# View/Edit BR Page
+elif page == "View/Edit BR":
+    st.header("View/Edit Business Rules")
+    
+    # Dropdown for selecting risk type
+    risk_type = st.selectbox("Select Risk Type", ["DRAD (AEMP 08 Policies)", "DQ (AEMP 70 Policies)"])
+    
+    # Display dashboard based on risk type
+    if risk_type == "DRAD (AEMP 08 Policies)":
+        st.write("Displaying dashboard for DRAD policies (AEMP 08)...")
+    else:
+        st.write("Displaying dashboard for DQ policies (AEMP 70)...")
+    
+    # Submit button
+    if st.button("Submit Changes"):
+        st.success("Changes saved successfully!")
+
+# Create BR Page
+elif page == "Create BR":
+    st.header("Create a New Business Rule")
+    
+    # Dropdown for risk types
+    risk_type_create = st.selectbox("Select Risk Type to create BR", ["DRAD", "DQ"])
+    
+    # Display corresponding primary policies
+    if risk_type_create == "DRAD":
+        st.write("Using Primary Policy AEMP 08")
+    else:
+        st.write("Using Primary Policy AEMP 70")
+    
+    # Predefined structure for BR creation
+    st.write("Fill in the details to create a Business Rule:")
+    br_name = st.text_input("Business Rule Name")
+    br_description = st.text_area("Business Rule Description")
+    
+    # Submit button
+    if st.button("Create Business Rule"):
+        if br_name and br_description:
+            st.success(f"Business Rule '{br_name}' created successfully!")
+        else:
+            st.error("Please fill in all fields to create the Business Rule.")
