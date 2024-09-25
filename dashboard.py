@@ -96,3 +96,42 @@ if 'Standard ID' in df.columns:
     st.subheader("10. Count of Records by Standard ID")
     standard_id_counts = df['Standard ID'].value_counts()
     st.bar_chart(standard_id_counts)
+
+# Visualization 11: Average Disposal Timeframe by EDM Policy (Bar Chart)
+if 'EDM Policy' in df.columns and 'Disposal Timeframe' in df.columns:
+    st.subheader("11. Average Disposal Timeframe by EDM Policy")
+    avg_disposal_by_policy = df.groupby('EDM Policy')['Disposal Timeframe'].mean()
+    st.bar_chart(avg_disposal_by_policy)
+
+# Visualization 12: Count of Non-Conformance Statuses Over EDM Policies (Bar Chart)
+if 'EDM Policy' in df.columns and 'Non-Conformance Status' in df.columns:
+    st.subheader("12. Count of Non-Conformance Statuses Over EDM Policies")
+    non_conformance_by_policy = pd.crosstab(df['EDM Policy'], df['Non-Conformance Status'])
+    non_conformance_by_policy.plot(kind='bar', stacked=True)
+    plt.title('Count of Non-Conformance Statuses Over EDM Policies')
+    st.pyplot()
+
+# Visualization 13: Distribution of Records Last Updated (Histogram)
+if 'Records Last Updated' in df.columns:
+    st.subheader("13. Distribution of Records Last Updated")
+    fig_hist, ax_hist = plt.subplots(figsize=(10, 6))
+    sns.histplot(df['Records Last Updated'], bins=30, kde=True, ax=ax_hist)
+    plt.title('Distribution of Records Last Updated')
+    st.pyplot(fig_hist)
+
+# Visualization 14: Count of Business Rule IDs (Bar Chart)
+if 'Business Rule ID' in df.columns:
+    st.subheader("14. Count of Business Rule IDs")
+    business_rule_counts = df['Business Rule ID'].value_counts()
+    st.bar_chart(business_rule_counts)
+
+# Visualization 15: Correlation Heatmap for Numeric Columns (if applicable)
+numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+if len(numeric_cols) > 0:
+    st.subheader("15. Correlation Heatmap for Numeric Columns")
+    correlation_matrix = df[numeric_cols].corr()
+    
+    fig_corr, ax_corr = plt.subplots(figsize=(10, 6))
+    sns.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax_corr)
+    plt.title('Correlation Heatmap')
+    st.pyplot(fig_corr)
