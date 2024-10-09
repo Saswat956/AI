@@ -1,0 +1,26 @@
+import git
+import os
+
+# Define the repository URL and local path where the repo will be cloned
+repo_url = 'https://github.com/username/repository_name.git'
+local_path = '/path/to/clone/repository'
+
+# Clone the repository if it's not already cloned
+if not os.path.exists(local_path):
+    print(f'Cloning repository from {repo_url}...')
+    repo = git.Repo.clone_from(repo_url, local_path)
+else:
+    print(f'Repository already exists at {local_path}. Opening...')
+    repo = git.Repo(local_path)
+
+# List all the files in the repository
+print("Listing all files in the repository:")
+for root, dirs, files in os.walk(local_path):
+    for file in files:
+        file_path = os.path.join(root, file)
+        print(f"File: {file_path}")
+
+        # Read the content of the file
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            file_content = f.read()
+            print(f"Content of {file_path}:\n{file_content}\n")
