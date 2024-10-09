@@ -1,0 +1,36 @@
+from github import Github
+
+# Provide your GitHub personal access token (for private repos, otherwise leave empty for public)
+access_token = 'your_github_access_token'
+
+# Initialize the GitHub object
+g = Github(access_token)
+
+# Specify the repository and branch (optional: if you want a specific branch)
+repo_name = 'username/repository_name'
+branch_name = 'main'  # Change to the desired branch name if not 'main'
+
+# Get the repository object
+repo = g.get_repo(repo_name)
+
+# Get the list of files in the repository (recursively if necessary)
+contents = repo.get_contents("")
+
+# Function to recursively list all files
+def list_files_in_repo(contents, file_list=[]):
+    for content_file in contents:
+        if content_file.type == 'dir':
+            file_list = list_files_in_repo(repo.get_contents(content_file.path), file_list)
+        else:
+            file_list.append(content_file)
+    return file_list
+
+# List all files in the repository
+all_files = list_files_in_repo(contents)
+
+# Print the path and content of each file
+for file in all_files:
+    print(f'File Path: {file.path}')
+    # Read the content of the file
+    file_content = file.decoded_content.decode('utf-8')
+    print(f'Content of {file.path}:\n{file_content}\n')
