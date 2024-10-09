@@ -1,0 +1,42 @@
+import requests
+import base64
+
+# GitHub repository details
+username = 'your_username'
+repo_name = 'repository_name'
+branch = 'main'  # Use the desired branch
+
+# GitHub API URL for listing files in the repository
+api_url = f'https://api.github.com/repos/{username}/{repo_name}/git/trees/{branch}?recursive=1'
+
+# Personal Access Token (if private repository, otherwise can be omitted)
+access_token = 'your_github_token'
+
+# Headers for the request (optional if not using authentication)
+headers = {
+    'Authorization': f'token {access_token}'
+} if access_token else {}
+
+# Fetch the list of files in the repository
+response = requests.get(api_url, headers=headers)
+
+if response.status_code == 200:
+    tree = response.json()['tree']
+    # Filter only 'blob' files (files, not directories)
+    files = [file['path'] for file in tree if file['type'] == 'blob']
+    print(f"Found {len(files)} files in the repository.")
+
+    # Loop through each file and get its content
+    for file_path in files:
+        print(f"\nReading file: {file_path}")
+        # Construct the raw file URL
+        raw_url = f'https://raw.githubusercontent.com/{username}/{repo_name}/{branch}/{file_path}'
+        
+        file_response = requests.get(raw_url)
+        if file_response.status_code == 200:
+            print(f"Contents of {file_path}:\n{file_response.text}")
+        else:
+            print(f"Failed to retrieve {file_path}. Status code: {file_response.status_code}")
+
+else:
+    print(f"Failed to fetch file list. Status code: {response.status_code}")
