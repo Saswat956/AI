@@ -1,5 +1,6 @@
 import requests
-import base64
+import pandas as pd
+from io import BytesIO
 
 # GitHub repository details
 username = 'your_username'
@@ -22,21 +23,33 @@ response = requests.get(api_url, headers=headers)
 
 if response.status_code == 200:
     tree = response.json()['tree']
-    # Filter only 'blob' files (files, not directories)
-    files = [file['path'] for file in tree if file['type'] == 'blob']
-    print(f"Found {len(files)} files in the repository.")
+    # Filter for Excel files (.xlsx or .xls) in any folder
+    excel_files = [file['path'] for file in tree if file['type'] == 'blob' and file['path'].endswith(('.xlsx', '.xls'))]
+    
+    print(f"Found {len(excel_files)} Excel files in the repository.")
 
-    # Loop through each file and get its content
-    for file_path in files:
-        print(f"\nReading file: {file_path}")
+    dataframes = {}
+    
+    # Loop through each Excel file and load into a pandas DataFrame
+    for file_path in excel_files:
+        print(f"\nReading Excel file: {file_path}")
         # Construct the raw file URL
         raw_url = f'https://raw.githubusercontent.com/{username}/{repo_name}/{branch}/{file_path}'
         
+        # Fetch the file content
         file_response = requests.get(raw_url)
         if file_response.status_code == 200:
-            print(f"Contents of {file_path}:\n{file_response.text}")
+            # Use BytesIO to read the file into pandas
+            excel_data = BytesIO(file_response.content)
+            df = pd.read_excel(excel_data)
+            
+            # Store the DataFrame with file path as the key
+            dataframes[file_path] = df
+            print(f"Loaded DataFrame for {file_path}")
         else:
             print(f"Failed to retrieve {file_path}. Status code: {file_response.status_code}")
-
 else:
     print(f"Failed to fetch file list. Status code: {response.status_code}")
+
+# Now you can access the dataframes from the `dataframes` dictionary
+# Example: dataframes['some_folder/some_file.xlsx']
