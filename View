@@ -1,0 +1,30 @@
+CREATE OR REPLACE VIEW df_view2 AS
+SELECT 
+    dc.fdo_nm, 
+    dc.federated_data_office, 
+    dc.data_quality, 
+    dc.implementation_system_classification, 
+    dc.data_quality_risk_dimension,
+    
+    -- Replace part of the string in 'data_quality_control_category'
+    REPLACE(REPLACE(dc.data_quality_control_category, '-', ' '), ' ,', 'and') AS data_quality_control_category,
+
+    -- Check criteria for data_quality_risk_dimension
+    CASE 
+        WHEN dc.data_quality_risk_dimension ~* 'Consistency|Completeness|Validity|Accuracy|Comprehensiveness|Logic/Reasonableness'
+        THEN TRUE 
+        ELSE FALSE 
+    END AS check_criteria,
+
+    -- Match criteria based on conditions
+    CASE 
+        WHEN dc.data_quality_control_category = 'Fit For Purpose'
+        AND dc.implementation_system_classification IN ('SOR/ADS', 'SOR', 'ADS')
+        AND dc.data_quality_risk_dimension ~* 'Consistency|Completeness|Validity|Accuracy|Comprehensiveness|Logic/Reasonableness'
+        THEN TRUE
+        ELSE FALSE
+    END AS match_criteria
+
+FROM ealab.da_cred_fraud_data AS dc
+LEFT JOIN ealdb.fdo_dtl AS fd
+ON dc.fdo_nm = fd.fdo_nm;
