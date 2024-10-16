@@ -1,0 +1,27 @@
+-- Create the view by directly joining the two tables and applying the necessary logic
+CREATE OR REPLACE VIEW df_view1 AS
+SELECT 
+    df_f1.fdo_id, 
+    df_f1.fdo_nm, 
+    df_f1.local_bt, 
+    df_bus_term.bus_term_nm,
+
+    -- Collibra_existence_indicator: True if local_bt is not null, False otherwise
+    CASE 
+        WHEN df_f1.local_bt IS NULL THEN FALSE
+        ELSE TRUE
+    END AS collibra_existence_indicator,
+
+    -- dq_inventory_indicator: True if bus_term_nm is not null, False otherwise
+    CASE 
+        WHEN df_bus_term.bus_term_nm IS NULL THEN FALSE
+        ELSE TRUE
+    END AS dq_inventory_indicator
+
+-- Perform the full outer join directly on the two tables
+FROM ealdb.da_inventory_data df_f1
+FULL OUTER JOIN ealdb.fdo_bus_term df_bus_term
+ON df_f1.fdo_id = df_bus_term.fdo_id
+
+-- Apply the condition for act_in = 'Y'
+WHERE df_bus_term.act_in = 'Y';
