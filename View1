@@ -1,27 +1,72 @@
--- Create the view by directly joining the two tables and applying the necessary logic
-CREATE OR REPLACE VIEW df_view1 AS
+CREATE OR REPLACE VIEW df_f3 AS
+WITH dq_inventory_data AS (
+    SELECT 
+        fdo_id,
+        fdo_nm,
+        local_bt,
+        local_bt AS local_bt_final  -- Create local_bt_final in dq_inventory_data
+    FROM 
+        ealdb.ealdb.dq_inventory_data
+),
+df_bus_term AS (
+    SELECT 
+        fdo_id,
+        bus_term_nm,
+        bus_term_nm AS local_bt_final  -- Create local_bt_final in df_bus_term
+    FROM 
+        ealdb.fdo_bus_term
+    WHERE 
+        act_in = 'Y'
+),
+-- Step to create df_final by concatenating dq_inventory_data and df_bus_term
+df_final AS (
+    SELECT DISTINCT 
+        fdo_id,
+        local_bt_final
+    FROM (
+        SELECT 
+            fdo_id,
+            local_bt_final
+        FROM 
+            dq_inventory_data
+
+        UNION ALL
+
+        SELECT 
+            fdo_id,
+            local_bt_final
+        FROM 
+            df_bus_term
+    ) AS combined_data  -- Subquery to combine data
+),
+-- Step to create df_f1 by merging df_final with dq_inventory_data on local_bt_final
+df_f1 AS (
+    SELECT 
+        f.*,
+        CASE WHEN dq.local_bt IS NULL THEN 'N' ELSE 'Y' END AS dq_inventory_indicator
+    FROM 
+        df_final f
+    LEFT JOIN 
+        dq_inventory_data dq ON f.local_bt_final = dq.local_bt
+),
+-- Step to create df_f2 by merging df_f1 with df_bus_term on local_bt_final
+df_f2 AS (
+    SELECT 
+        f.*,
+        CASE WHEN bt.bus_term_nm IS NULL THEN 'N' ELSE 'Y' END AS collibra_data_indicator
+    FROM 
+        df_f1 f
+    LEFT JOIN 
+        df_bus_term bt ON f.local_bt_final = bt.local_bt_final
+)
+-- Final selection from df_f2 and joining with fdo_dtl to create df_f3
 SELECT 
-    df_f1.fdo_id, 
-    df_f1.fdo_nm, 
-    df_f1.local_bt, 
-    df_bus_term.bus_term_nm,
-
-    -- Collibra_existence_indicator: True if local_bt is not null, False otherwise
-    CASE 
-        WHEN df_f1.local_bt IS NULL THEN FALSE
-        ELSE TRUE
-    END AS collibra_existence_indicator,
-
-    -- dq_inventory_indicator: True if bus_term_nm is not null, False otherwise
-    CASE 
-        WHEN df_bus_term.bus_term_nm IS NULL THEN FALSE
-        ELSE TRUE
-    END AS dq_inventory_indicator
-
--- Perform the full outer join directly on the two tables
-FROM ealdb.da_inventory_data df_f1
-FULL OUTER JOIN ealdb.fdo_bus_term df_bus_term
-ON df_f1.fdo_id = df_bus_term.fdo_id
-
--- Apply the condition for act_in = 'Y'
-WHERE df_bus_term.act_in = 'Y';
+    f.fdo_id,
+    f.local_bt_final,
+    f.dq_inventory_indicator,
+    f.collibra_data_indicator,
+    d.fdo_nm
+FROM 
+    df_f2 f
+LEFT JOIN 
+    ealdb.fdo_dtl d ON f.fdo_id = d.fdo_id;
