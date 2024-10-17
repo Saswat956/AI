@@ -59,8 +59,8 @@ df_f2 AS (
     LEFT JOIN 
         df_bus_term bt ON f.local_bt_final = bt.local_bt_final
 )
--- Final selection from df_f2 and joining with fdo_dtl to create df_f3
-SELECT 
+-- Final selection from df_f2 and joining with fdo_dtl to create df_f3, ensuring distinct results for fdo_nm and local_bt_final
+SELECT DISTINCT ON (f.local_bt_final, d.fdo_nm)  -- Ensure distinct combinations of local_bt_final and fdo_nm
     f.fdo_id,
     f.local_bt_final,
     f.dq_inventory_indicator,
@@ -69,4 +69,6 @@ SELECT
 FROM 
     df_f2 f
 LEFT JOIN 
-    ealdb.fdo_dtl d ON f.fdo_id = d.fdo_id;
+    ealdb.fdo_dtl d ON f.fdo_id = d.fdo_id
+ORDER BY 
+    f.local_bt_final, d.fdo_nm;  -- Order by the columns specified in DISTINCT ON
