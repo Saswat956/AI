@@ -1,0 +1,106 @@
+Purpose of the Query:
+The query creates or replaces a view named dq_inventory_data_validation that selects and transforms data from the dq_inventory_data table based on specific criteria.
+Key Components:
+Source Table: ealab.dq_inventory_data
+Output View: dq_inventory_data_validation
+Columns Selected:
+fdo_id: Identifier for each record.
+fdo_nm: Name of the data source, with specific formatting applied.
+local_bt: Local business term.
+data_quality_control_category: Transformed category with replacements.
+dq_impl_sys_class: Implementation system class.
+dq_risk_dim: Risk dimension.
+match_criteria: Derived column based on specific conditions.
+Transformation Logic:
+The query uses a series of CASE statements to determine the value of match_criteria based on:
+The value of dq_ctrl_cat.
+The values in dq_impl_sys_class.
+Regular expression matching on dq_risk_dim.
+Filtering Logic:
+The query filters records to only include those with the maximum version number from the source table.
+Unit Test Cases
+To ensure that your SQL query behaves as expected, you can create unit test cases. Here are some examples:
+Test Case 1: Verify Output Structure
+Objective: Ensure that the output view has the correct structure.
+Test Steps:
+Execute the query to create the view.
+Check that the view contains columns: fdo_id, fdo_nm, local_bt, data_quality_control_category, dq_impl_sys_class, dq_risk_dim, and match_criteria.
+Expected Result: All specified columns should be present in the output view.
+Test Case 2: Validate Match Criteria Logic
+Objective: Ensure that match criteria are assigned correctly based on input conditions.
+Test Steps:
+Insert test records into the source table with known values for each condition.
+Execute the query to create or refresh the view.
+Select records from the output view and verify their match criteria against expected values.
+Expected Result: Each record's match criteria should align with defined logic.
+Test Case 3: Check Data Quality Control Category Transformation
+Objective: Validate that data quality control categories are transformed correctly.
+Test Steps:
+Insert records with various formats in the dq_ctrl_cat column (e.g., "Fit-For-Purpose", "Origination and Fit-For-Purpose").
+Execute the query to create or refresh the view.
+Verify that replacements (e.g., "-" to " ") are applied correctly in the output view.
+Expected Result: The transformed values should match expected formats.
+Test Case 4: Confirm Filtering by Version Number
+Objective: Ensure that only records with the maximum version number are included in the output view.
+Test Steps:
+Insert multiple records with different version numbers into the source table.
+Execute the query to create or refresh the view.
+Check that all records in the output view have the maximum version number from the source table.
+Expected Result: All records should have a version number equal to the maximum version number.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Purpose of the Query
+The query creates or replaces a view named dq_inventory_discrepancy that consolidates and transforms data from two tables: dq_inventory_data and fdo_bus_term. It identifies discrepancies based on specific criteria related to data quality and business terms.
+Key Components
+Source Tables:
+ealdb.dq_inventory_data: Contains data quality information.
+ealdb.fdo_bus_term: Contains business term information.
+Output View:
+dq_inventory_discrepancy
+Columns Selected:
+fdo_id: Identifier for each record.
+fdo_nm: Name of the data source.
+scope_seg_nm: Scope segment name.
+local_bt_final: Local business term, derived from both source tables.
+In_dq_inventory: Indicator showing if the local term exists in the data quality inventory (Y/N).
+In_collibra: Indicator showing if the local term exists in the business term table (Y/N).
+Transformation Logic
+Data Selection:
+The query first selects records from dq_inventory_data for the maximum version number.
+It selects active business terms from fdo_bus_term.
+Combining Data:
+It combines data from both sources using a UNION ALL operation, ensuring distinct combinations of identifiers and local business terms.
+Adding Indicators:
+Two indicators (In_dq_inventory and In_collibra) are added to indicate whether each local term exists in their respective source tables.
+Final Selection:
+The final output ensures distinct records based on combinations of local_bt_final, fdo_nm, and scope_seg_nm.
+Unit Test Cases
+To ensure that your SQL query behaves as expected, you can create unit test cases. Here are some examples:
+Test Case 1: Verify Output Structure
+Objective: Ensure that the output view has the correct structure.
+Test Steps:
+Execute the query to create or replace the view.
+Check that the view contains columns: fdo_id, fdo_nm, scope_seg_nm, local_bt_final, In_dq_inventory, and In_collibra.
+Expected Result: All specified columns should be present in the output view.
+Test Case 2: Validate Match Criteria Logic
+Objective: Ensure that indicators are assigned correctly based on input conditions.
+Test Steps:
+Insert test records into both source tables (dq_inventory_data and fdo_bus_term) with known values for each condition.
+Execute the query to create or refresh the view.
+Select records from the output view and verify their indicators against expected values.
+Expected Result: Each record's indicators (In_dq_inventory and In_collibra) should align with defined logic.
+Test Case 3: Check Data Quality Inventory Selection
+Objective: Validate that only records with the maximum version number are included in the output view.
+Test Steps:
+Insert multiple records with different version numbers into the source table (dq_inventory_data).
+Execute the query to create or refresh the view.
+Check that all records in the output view have a version number equal to the maximum version number from the source table.
+Expected Result: All records should have a version number equal to the maximum version number.
+Test Case 4: Confirm Distinct Results
+Objective: Ensure that distinct results are generated based on combinations of relevant fields.
+Test Steps:
+Insert test records into both source tables that would create duplicates based on selected fields.
+Execute the query to create or refresh the view.
+Select records from the output view and verify that there are no duplicates for combinations of (local_bt_final, fdo_nm, and scope_seg_nm).
+Expected Result: The output view should contain distinct combinations as specified.
