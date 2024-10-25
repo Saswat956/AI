@@ -35,3 +35,81 @@ LEFT JOIN
 LEFT JOIN 
     ealdb.qalibrate_data q ON di.fdo_id = q.fdo_id 
         AND di.local_bt = q.bt_cde;  -- Match local_bt with bt_cde
+-------------------------------------------------------------------------------------------------------------------------------------
+Purpose of the Query
+The query creates or replaces a view named combined_view that consolidates and transforms data from the fdo_bus_term, dq_inventory_data, and qalibrate_data tables based on specific join conditions and filters.
+Key Components
+Source Tables:
+ealdb.fdo_bus_term: Contains business term information.
+ealdb.dq_inventory_data: Contains data quality information.
+ealdb.qalibrate_data: Contains calibration data.
+Output View:
+combined_view
+Columns Selected:
+fdo_nm: Name of the data source.
+bus_term_nm: Business term name.
+scope_seg_nm: Scope segment name.
+data_steward: Steward responsible for data.
+data_custodian: Custodian responsible for data.
+data_exec: Execution details.
+dq_impl_sys_class: Implementation system class from the inventory data.
+phy_db: Physical database from the inventory data.
+phy_tbl: Physical table from the inventory data.
+phy_data_elem: Physical data element from the inventory data.
+dq_rule_impl_sys: Implementation system for the data quality rule.
+dq_ctrl_nm: Control name for data quality.
+dq_ctrl_cat: Control category for data quality.
+dq_src: Data source for quality control.
+dq_risk_dim: Risk dimension related to data quality.
+dq_ctrl_type: Type of control applied to data quality.
+load_freq: Frequency of loading data from calibration data.
+rule_nm: Name of the rule from calibration data.
+created_by: User who created the calibration record.
+exec_cnt, fail_cnt, no_data_cnt, no_exec_cnt, and pass_cnt: Execution statistics.
+Transformation Logic
+Data Selection:
+The query selects relevant columns from each of the three tables based on specified join conditions.
+Joining Logic:
+It joins records from:
+fdo_bus_term with fdo_dtl to get the business term name (bus_term_nm).
+dq_inventory_data based on matching business terms and ensuring only active records are included (act_in = 'Y').
+qalibrate_data based on matching IDs and local business terms.
+Filtering Logic:
+The query ensures that only relevant records are included based on the specified conditions.
+Unit Test Cases
+To ensure that your SQL query behaves as expected, you can create unit test cases. Here are some examples:
+Test Case 1: Verify Output Structure
+Objective: Ensure that the output view has the correct structure.
+Test Steps:
+Execute the query to create or replace the view.
+Check that the view contains columns:
+text
+fdo_nm, bus_term_nm, scope_seg_nm, data_steward, 
+data_custodian, data_exec, dq_impl_sys_class, phy_db, 
+phy_tbl, phy_data_elem, dq_rule_impl_sys, dq_ctrl_nm, 
+dq_ctrl_cat, dq_src, dq_risk_dim, dq_ctrl_type, load_freq,
+rule_nm, created_by, exec_cnt, fail_cnt, no_data_cnt,
+no_exec_cnt, pass_cnt
+
+Expected Result: All specified columns should be present in the output view.
+Test Case 2: Validate Join Logic
+Objective: Ensure that records are joined correctly across all three tables based on specified conditions.
+Test Steps:
+Insert test records into each source table with known values for each condition (including both matching and non-matching records).
+Execute the query to create or refresh the view.
+Select records from the output view and verify their values against expected results based on join conditions.
+Expected Result: Each record should reflect accurate joins according to defined logic.
+Test Case 3: Check Active Records Filtering
+Objective: Validate that only active records (act_in = 'Y') from dq_inventory_data are included in the output view.
+Test Steps:
+Insert multiple records into the source table (dq_inventory_data) with varying values in the act_in column (both 'Y' and 'N').
+Execute the query to create or refresh the view.
+Check that all records in the output view have an active status (act_in = 'Y').
+Expected Result: All records should have an active status.
+Test Case 4: Confirm Distinct Results
+Objective: Ensure that distinct results are generated based on combinations of relevant fields if necessary (if duplicates could occur).
+Test Steps:
+Insert test records into all source tables that would create duplicates based on selected fields (e.g., same local business term).
+Execute the query to create or refresh the view.
+Select records from the output view and verify that there are no duplicates for combinations of key fields (if applicable).
+Expected Result: The output view should contain distinct combinations as specified.
