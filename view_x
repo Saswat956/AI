@@ -1,0 +1,37 @@
+CREATE OR REPLACE VIEW combined_view AS
+SELECT 
+    fb.fdo_nm,
+    fb.bus_term_nm,
+    di.scope_seg_nm,
+    q.data_steward,
+    q.data_custodian,
+    q.data_exec,
+    di.dq_impl_sys_class,
+    di.phy_db,
+    di.phy_tbl,
+    di.phy_data_elem,
+    di.dq_rule_impl_sys,
+    di.dq_ctrl_nm,
+    di.dq_ctrl_cat,
+    di.dq_src,
+    di.dq_risk_dim,
+    di.dq_ctrl_type,
+    q.load_freq,
+    q.rule_nm,
+    q.created_by,
+    q.exec_cnt,
+    q.fail_cnt,
+    q.no_data_cnt,
+    q.no_exec_cnt,
+    q.pass_cnt
+FROM 
+    ealdb.fdo_bus_term fb
+JOIN 
+    ealdb.fdo_dtl fd ON fb.fdo_id = fd.fdo_id  -- Join to get fdo_nm
+LEFT JOIN 
+    ealdb.dq_inventory_data di ON fb.bus_term_nm = di.local_bt 
+        AND fd.fdo_nm = di.fdo_nm  -- Ensure fdo_nm matches
+        AND di.act_in = 'Y'  -- Filter for active records
+LEFT JOIN 
+    ealdb.qalibrate_data q ON di.fdo_id = q.fdo_id 
+        AND di.local_bt = q.bt_cde;  -- Match local_bt with bt_cde
