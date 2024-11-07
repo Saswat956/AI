@@ -1,0 +1,99 @@
+To apply indexing directly on top of the query, we can’t explicitly create indexes within the view itself in PostgreSQL. However, we can achieve indexing-like performance by using materialized views in PostgreSQL, which allow you to create indexes on the materialized view’s result set.
+
+Here’s how to set up a materialized view for your query and apply indexes on it:
+
+Step 1: Create a Materialized View
+
+Instead of a regular view, create a materialized view for df_f3 to store the results of the query physically in the database.
+
+CREATE MATERIALIZED VIEW df_f3 AS
+WITH dq_inventory_data AS (
+    SELECT 
+        fdo_id,
+        fdo_nm,
+        local_bt,
+        local_bt AS local_bt_final
+    FROM 
+        ealdb.ealdb.dq_inventory_data
+),
+df_bus_term AS (
+    SELECT 
+        fdo_id,
+        bus_term_nm,
+        bus_term_nm AS local_bt_final
+    FROM 
+        ealdb.fdo_bus_term
+    WHERE 
+        act_in = 'Y'
+),
+df_final AS (
+    SELECT DISTINCT 
+        fdo_id,
+        local_bt_final
+    FROM (
+        SELECT 
+            fdo_id,
+            local_bt_final
+        FROM 
+            dq_inventory_data
+        UNION ALL
+        SELECT 
+            fdo_id,
+            local_bt_final
+        FROM 
+            df_bus_term
+    ) AS combined_data
+),
+df_f1 AS (
+    SELECT 
+        f.*,
+        CASE WHEN dq.local_bt IS NULL THEN 'N' ELSE 'Y' END AS dq_inventory_indicator
+    FROM 
+        df_final f
+    LEFT JOIN 
+        dq_inventory_data dq ON f.local_bt_final = dq.local_bt
+),
+df_f2 AS (
+    SELECT 
+        f.*,
+        CASE WHEN bt.bus_term_nm IS NULL THEN 'N' ELSE 'Y' END AS collibra_data_indicator
+    FROM 
+        df_f1 f
+    LEFT JOIN 
+        df_bus_term bt ON f.local_bt_final = bt.local_bt_final
+)
+SELECT DISTINCT ON (f.local_bt_final, d.fdo_nm)
+    f.fdo_id,
+    f.local_bt_final,
+    f.dq_inventory_indicator,
+    f.collibra_data_indicator,
+    d.fdo_nm
+FROM 
+    df_f2 f
+LEFT JOIN 
+    ealdb.fdo_dtl d ON f.fdo_id = d.fdo_id
+ORDER BY 
+    f.local_bt_final, d.fdo_nm;
+
+Step 2: Create Indexes on the Materialized View
+
+After creating the materialized view, you can add indexes to it as if it were a table, focusing on columns used in joins, filters, or ordering.
+
+For example:
+
+CREATE INDEX idx_df_f3_fdo_id ON df_f3(fdo_id);
+CREATE INDEX idx_df_f3_local_bt_final ON df_f3(local_bt_final);
+CREATE INDEX idx_df_f3_fdo_nm ON df_f3(fdo_nm);
+
+Step 3: Refresh the Materialized View (When Necessary)
+
+Since materialized views do not automatically update with changes in the underlying tables, you need to refresh the view when the data changes:
+
+REFRESH MATERIALIZED VIEW df_f3;
+
+Explanation
+
+	•	Materialized View: Stores the query results in a physical form, which allows indexing and faster access.
+	•	Indexes: The created indexes help PostgreSQL quickly locate rows in df_f3 during queries, improving performance for frequent lookups on columns like fdo_id, local_bt_final, and fdo_nm.
+
+Using this approach, you get the performance benefit of indexing directly on the result set of your complex query.
